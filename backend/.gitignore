@@ -1,0 +1,7 @@
+/env
+..env
+/contract_service/__pycache__
+/contracts/migrations/__pycache__
+/contracts/__pycache__
+
+.db.sqlite3

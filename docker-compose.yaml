@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: ./Dockerfile
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://127.0.0.1:8000  # HTTP backend URL
+      - REACT_APP_WEBSOCKET_URL=ws://127.0.0.1:8000  # WebSocket backend URL
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+
+  backend:
+    env_file:
+      - backend/.env
+    build:
+      context: ./backend/
+      dockerfile: ./Dockerfile
+    ports:
+      # - "127.0.0.1:8000:80"
+      - "8000:8000" 
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/contracts
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./backend:/app
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: contracts
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
