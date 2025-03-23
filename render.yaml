@@ -1,0 +1,67 @@
+---
+services:
+  - name: frontend
+    type: web
+    env: static
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        value: http://127.0.0.1:8000
+      - key: REACT_APP_WEBSOCKET_URL
+        value: ws://127.0.0.1:8000
+    build:
+      dockerfilePath: ./frontend/Dockerfile
+      context: ./frontend/
+    ports:
+      - name: http
+        port: 3000
+    dependencies:
+      - backend
+
+  - name: backend
+    type: web
+    env: static
+    envVars:
+      - key: DATABASE_URL
+        value: postgres://postgres:postgres@postgres:5432/contracts
+      - key: REDIS_URL
+        value: redis://redis:6379
+    build:
+      dockerfilePath: ./backend/Dockerfile
+      context: ./backend/
+    ports:
+      - name: http
+        port: 8000
+    dependencies:
+      - postgres
+      - redis
+
+  - name: postgres
+    type: database
+    image: postgres:latest
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        value: password
+      - key: POSTGRES_DB
+        value: contracts
+    volumes:
+      - name: postgres_data
+        path: /var/lib/postgresql/data
+    ports:
+      - name: postgres
+        port: 5432
+
+  - name: redis
+    type: cache
+    image: redis:latest
+    volumes:
+      - name: redis_data
+        path: /data
+    ports:
+      - name: redis
+        port: 6379
+
+volumes:
+  - name: postgres_data
+  - name: redis_data
