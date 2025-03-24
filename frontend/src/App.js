@@ -40,13 +40,19 @@ const App = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const sanitizedData = Object.fromEntries(
+      Object.entries(contractData).map(([key, value]) => 
+        value === "" ? [key, null] : [key, value]
+      )
+    );
     try {
       const response = await fetch(`${API_URL}/contracts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(contractData),
+        body: JSON.stringify(sanitizedData),
       });
       if (response.ok) {
         setCreateContract(false);
@@ -97,7 +103,7 @@ useEffect(() => {
     setCurrentPage(1);
     fetchContracts();
   }
-  , [searchQuery, statusFilter, currentPage]);
+  , [searchQuery, statusFilter]);
 
   const fetchContracts = async (url = null) => {
     try {
@@ -108,7 +114,7 @@ useEffect(() => {
             }&page=${currentPage}&page_size=${pageSize}`;
 
       const response = await axios.get(apiUrl);
-      if (response.data.status && response.data.data) {
+      if (response.data.status && response.data.data.count>0) {
         setContracts(response.data.data.results);
         setNextPage(response.data.data.next);
         setPreviousPage(response.data.data.previous);
@@ -156,6 +162,7 @@ useEffect(() => {
 
   const handleNextPage = (e) => {
     e.preventDefault();
+    console.log(nextPage)
     if (nextPage) {
       fetchContracts(nextPage);
       setCurrentPage((prev) => prev + 1);
@@ -172,7 +179,7 @@ useEffect(() => {
   return (
     <div className="App">
       <h1>Contract Management</h1>
-      <div>
+      <div className="filters">
         {!editingContract && !createContract && 
         (<>
         <input
@@ -188,7 +195,6 @@ useEffect(() => {
           <option value="expired">Expired</option>
         </select>
         </>)}
-
       <button onClick={() => setCreateContract(true)}>Create Contract</button>     
       </div>
 
@@ -199,6 +205,7 @@ useEffect(() => {
         placeholder="Client Name"
         value={contractData.client_name || ""}
         onChange={handleChange}
+        required
       />
       <input
         type="text"
@@ -208,7 +215,7 @@ useEffect(() => {
         onChange={handleChange}
       />
       <>
-      <div>Effective Date</div>
+      <div style={{fontSize:"10px",  marginTop:"10px"}}>Effective Date</div>
       <input
         type="date"
         name="effective_date"
@@ -217,14 +224,17 @@ useEffect(() => {
         onChange={handleChange}
       />
       </>
-      
+      <>
+      <div style={{fontSize:"10px", marginTop:"10px"}}>Effective Date</div>
       <input
         type="date"
         name="expiration_date"
         placeholder="Expiration Date"
         value={contractData.expiration_date || ""}
         onChange={handleChange}
+        min={contractData.effective_date || ""}
       />
+      </>
       <input
         type="number"
         name="contract_value"
@@ -244,7 +254,6 @@ useEffect(() => {
        </button>
     </form>)}
 
-      {/* Contracts Table */}
       {!createContract && !editingContract && (<div className="table-container">
         <table>
           <thead>
@@ -289,7 +298,6 @@ useEffect(() => {
       </div>)}
 
 
-      {/* Edit Contract Form */}
       {editingContract && (
         <form>
           <h2>Edit Contract</h2>
@@ -381,7 +389,7 @@ useEffect(() => {
         </form>
       )}
       {!createContract && !editingContract && (
-        <div>
+        <div className="page-div">
         <button onClick={handlePreviousPage} disabled={!previousPage}>
           Previous
         </button>

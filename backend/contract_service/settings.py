@@ -42,18 +42,12 @@ INSTALLED_APPS = [
     'channels',
 ]
 
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
-#     },
-# }
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            # "hosts": [("redis://redis:6379")],
-            "hosts": [("redis://172.26.118.124:6379")],
+            "hosts": [("redis://redis:6379")],
+            # "hosts": [("redis://172.26.118.124:6379")],
         },
     },
 }
@@ -105,6 +99,7 @@ DATABASES = {
         "USER": "postgres",
         "PASSWORD": "postgres",
         "HOST": "postgres",
+        # "HOST": "localhost",
         "PORT": "5432",
     }
 }
